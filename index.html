@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Beyer-Matrix – Interaktives Lerntool</title>
+  <style>
+    :root {
+      --bg: #111417;
+      --bg-panel: #181c20;
+      --bg-panel-alt: #1f2429;
+      --border: #2a3138;
+      --accent: #c49a4a;
+      --accent-soft: #8b6a2f;
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #b91c1c;
+      --warning: #b45309;
+      --success: #15803d;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #15191d 0, #0b0e11 40%, #050608 100%);
+      color: var(--text);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+
+    p.lead {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: var(--text-muted);
+      max-width: 720px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+      padding: 20px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--bg-panel) 0, var(--bg-panel-alt) 100%);
+      border: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .matrix-toggle {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .matrix-toggle button {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .matrix-toggle button.active {
+      background: var(--accent-soft);
+      color: #0b0e11;
+      font-weight: 600;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .matrix-cell {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 10px 12px;
+      background: #14181c;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+      min-height: 90px;
+    }
+
+    .matrix-cell:hover {
+      background: #171c21;
+      border-color: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+
+    .matrix-cell-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--accent);
+    }
+
+    .matrix-cell-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .matrix-detail {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #12161a;
+      min-height: 90px;
+    }
+
+    .matrix-detail-heading {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .matrix-detail-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .matrix-detail-example {
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .mini-animation {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .mini-animation-figure {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      background: #181c20;
+    }
+
+    .mini-animation-figure.alt {
+      border-color: var(--accent-soft);
+      background: #15191d;
+    }
+
+    /* Szenario-Builder */
+
+    .builder-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .builder-block {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #14181c;
+      padding: 10px 10px 12px;
+    }
+
+    .builder-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0f1317;
+      color: var(--text);
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    select:focus {
+      border-color: var(--accent-soft);
+    }
+
+    .builder-checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .builder-checkbox-group input {
+      accent-color: var(--accent-soft);
+    }
+
+    .builder-action {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .builder-action button {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-soft);
+      background: var(--accent-soft);
+      color: #0b0e11;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .builder-action button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .builder-output {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr);
+      gap: 12px;
+    }
+
+    .output-panel {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #12161a;
+      padding: 10px 10px 12px;
+      font-size: 0.85rem;
+    }
+
+    .output-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .output-text {
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .ampel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .ampel-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .ampel-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #374151;
+    }
+
+    .ampel-dot.success {
+      background: var(--success);
+    }
+
+    .ampel-dot.warning {
+      background: var(--warning);
+    }
+
+    .ampel-dot.danger {
+      background: var(--danger);
+    }
+
+    /* Risiko-Radar */
+
+    .radar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .radar-item {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #12161a;
+      padding: 8px 8px 9px;
+      font-size: 0.8rem;
+    }
+
+    .radar-label {
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .radar-value {
+      font-weight: 600;
+    }
+
+    /* Reflexion */
+
+    .reflection {
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    .reflection-question {
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .reflection-note {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 900px) {
+      .matrix-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .builder-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .builder-output {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .radar-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 24px 14px 32px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .matrix-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .radar-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Beyer‑Matrix interaktiv verstehen</h1>
+    <p class="lead">
+      Dieses Tool macht das Strukturmodell von K. Beyer erfahrbar: Erziehungsziele, Mittel, Bedingungen und Wirkungen
+      werden sowohl funktional (technologisch) als auch wertend (axiologisch) betrachtet – am Beispiel „Schnuller abgewöhnen“.
+    </p>
+  </header>
+
+  <!-- Matrix-Explorer -->
+  <section class="section">
+    <div class="section-title">Überblick über die vier Felder der Beyer‑Matrix</div>
+
+    <div class="matrix-toggle">
+      <button type="button" class="active" id="toggle-tech">Technologische Perspektive</button>
+      <button type="button" id="toggle-axio">Axiologische Perspektive</button>
+    </div>
+
+    <div class="matrix-grid" id="matrix-grid">
+      <div class="matrix-cell" data-field="zwecke">
+        <div class="matrix-cell-title">Zwecke</div>
+        <div class="matrix-cell-sub">Erziehungsziele des Handelns</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">
+          Beispiel: „Schnuller abgewöhnen, um Selbstregulation zu fördern.“
+        </div>
+      </div>
+
+      <div class="matrix-cell" data-field="mittel">
+        <div class="matrix-cell-title">Mittel</div>
+        <div class="matrix-cell-sub">Konkrete Handlungsmöglichkeiten</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">
+          Beispiel: „Schrittweise reduzieren statt abrupt wegnehmen.“
+        </div>
+      </div>
+
+      <div class="matrix-cell" data-field="bedingungen">
+        <div class="matrix-cell-title">Bedingungsfeld</div>
+        <div class="matrix-cell-sub">Kontext und Voraussetzungen</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">
+          Beispiel: „Kind ist ängstlich, Eltern uneinig, hohe Belastung.“
+        </div>
+      </div>
+
+      <div class="matrix-cell" data-field="wirkungen">
+        <div class="matrix-cell-title">Wirkungshypothesen</div>
+        <div class="matrix-cell-sub">Absehbare Nebenwirkungen</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">
+          Beispiel: „Kurzfristige Unruhe, Trotzreaktionen, langfristig bessere Selbstregulation.“
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-detail" id="matrix-detail">
+      <div class="matrix-detail-heading">Feld auswählen, um Details zu sehen</div>
+      <div class="matrix-detail-text">
+        Klicke auf eines der vier Felder, um zu sehen, wie es in der Beyer‑Matrix beschrieben wird – einmal funktional
+        (technologisch: „klappt es?“) und einmal wertend (axiologisch: „ist es gut?“).
+      </div>
+      <div class="matrix-detail-example"></div>
+      <div class="mini-animation">
+        <div class="mini-animation-figure">K</div>
+        <div class="mini-animation-figure alt">K</div>
+        <div>Symbolisch: Kind mit Schnuller / Kind ohne Schnuller.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interaktives Modul -->
+  <section class="section">
+    <div class="section-title">Konsequenzen pädagogischen Handelns erkunden</div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
+      Stelle ein Szenario zusammen und erfahre, welche Wirkungen wahrscheinlich sind und wie das Vorgehen einzuschätzen ist.
+    </p>
+
+    <div class="builder-grid">
+      <div class="builder-block">
+        <div class="builder-label">Ziel des Handelns</div>
+        <select id="select-purpose">
+          <option value="">Bitte wählen</option>
+          <option value="zahn">Zahnfehlstellungen vermeiden</option>
+          <option value="selbstreg">Selbstregulation fördern</option>
+          <option value="genervt">Eltern sind genervt</option>
+        </select>
+      </div>
+
+      <div class="builder-block">
+        <div class="builder-label">Art des Vorgehens</div>
+        <select id="select-means">
+          <option value="">Bitte wählen</option>
+          <option value="abrupt">Abrupt wegnehmen</option>
+          <option value="schritt">Schrittweise reduzieren</option>
+          <option value="einschlafen">Nur zum Einschlafen erlauben</option>
+          <option value="ritual">Abschiedsritual gestalten</option>
+        </select>
+      </div>
+
+      <div class="builder-block">
+        <div class="builder-label">Kontext und Bedingungen</div>
+        <div class="builder-checkbox-group" id="conditions-group">
+          <label><input type="checkbox" value="aengstlich"> Kind ist sehr ängstlich</label>
+          <label><input type="checkbox" value="uneinig"> Eltern sind uneinig</label>
+          <label><input type="checkbox" value="belastung"> Hohe Belastung</label>
+          <label><input type="checkbox" value="ruhig"> Stabile, ruhige Phase</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="builder-action">
+      <button type="button" id="btn-simulate" disabled>Was würde passieren, wenn …?</button>
+      <div style="font-size:0.8rem;color:var(--text-muted);">
+        Button wird aktiv, wenn alle Felder gewählt sind.
+      </div>
+    </div>
+
+    <div class="builder-output">
+      <div class="output-panel" id="output-effects">
+        <div class="output-title">Erwartete Wirkungshypothesen</div>
+        <div class="output-text">
+          Absehbare Nebenwirkungen des gewählten Vorgehens.
+        </div>
+        <div id="effects-list"></div>
+      </div>
+
+      <div class="output-panel" id="output-rating">
+        <div class="output-title">Bewertung des Vorgehens</div>
+        <div class="output-text">
+          Funktional (technologisch) und wertend (axiologisch).
+        </div>
+        <div class="ampel">
+          <div class="ampel-item">
+            <div class="ampel-dot" id="dot-tech"></div>
+            <div>Technologisch</div>
+          </div>
+          <div class="ampel-item">
+            <div class="ampel-dot" id="dot-axio"></div>
+            <div>Axiologisch</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risiko-Radar -->
+    <div class="output-panel" style="margin-top:14px;">
+      <div class="output-title">Risiko‑Radar</div>
+      <div class="output-text">
+        Einschätzung des gewählten Mittels.
+      </div>
+      <div class="radar-grid">
+        <div class="radar-item">
+          <
