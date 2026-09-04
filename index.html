@@ -1,438 +1,413 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Beyer-Matrix – Interaktives Lerntool</title>
-  <style>
-    :root {
-      --bg: #111417;
-      --bg-panel: #181c20;
-      --bg-panel-alt: #1f2429;
-      --border: #2a3138;
-      --accent: #c49a4a;
-      --accent-soft: #8b6a2f;
-      --text: #e5e7eb;
-      --text-muted: #9ca3af;
-      --danger: #b91c1c;
-      --warning: #b45309;
-      --success: #15803d;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beyer-Matrix – Interaktives Lerntool</title>
+<style>
+  :root {
+    --bg: #111417;
+    --bg-panel: #181c20;
+    --bg-panel-alt: #1f2429;
+    --border: #2a3138;
+    --accent: #c49a4a;
+    --accent-soft: #8b6a2f;
+    --text: #e5e7eb;
+    --text-muted: #9ca3af;
+    --danger: #b91c1c;
+    --warning: #b45309;
+    --success: #15803d;
+    --example-bg: #1c2b22;
+    --example-border: #2f5b3f;
+    --example-text: #a7d8b8;
+  }
 
-    * {
-      box-sizing: border-box;
-    }
+  * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top left, #15191d 0, #0b0e11 40%, #050608 100%);
-      color: var(--text);
-    }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top left, #15191d 0, #0b0e11 40%, #050608 100%);
+    color: var(--text);
+  }
 
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 32px 20px 40px;
-    }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px 40px;
+  }
 
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
-      letter-spacing: 0.03em;
-    }
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+  }
 
-    p.lead {
-      margin-top: 0;
-      margin-bottom: 24px;
-      color: var(--text-muted);
-      max-width: 720px;
-    }
+  p.lead {
+    margin-top: 0;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    max-width: 720px;
+  }
 
-    .section {
-      margin-bottom: 32px;
-      padding: 20px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--bg-panel) 0, var(--bg-panel-alt) 100%);
-      border: 1px solid var(--border);
-    }
+  .section {
+    margin-bottom: 32px;
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--bg-panel) 0, var(--bg-panel-alt) 100%);
+    border: 1px solid var(--border);
+  }
 
-    .section-title {
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-      font-weight: 600;
-    }
+  .section-title {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
 
-    .matrix-toggle {
-      display: inline-flex;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
+  .section-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: -6px 0 16px;
+    max-width: 680px;
+  }
 
-    .matrix-toggle button {
-      padding: 6px 14px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      cursor: pointer;
-      flex: 1;
-    }
+  /* Legende für die Perspektiven-Erklärung */
 
-    .matrix-toggle button.active {
-      background: var(--accent-soft);
-      color: #0b0e11;
-      font-weight: 600;
-    }
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
 
-    .matrix-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-    }
+  .legend-item {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #14181c;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+  }
 
-    .matrix-cell {
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      padding: 10px 10px 12px;
-      background: #14181c;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
-      position: relative;
-      min-height: 90px;
-    }
+  .legend-item strong {
+    display: block;
+    color: var(--accent);
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+  }
 
-    .matrix-cell:hover {
-      background: #171c21;
-      border-color: var(--accent-soft);
-      transform: translateY(-1px);
-    }
+  .legend-item span {
+    color: var(--text-muted);
+  }
 
-    .matrix-cell-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--accent);
-    }
+  .matrix-toggle {
+    display: inline-flex;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
 
-    .matrix-cell-sub {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
+  .matrix-toggle button {
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+    flex: 1;
+  }
 
-    .matrix-detail {
-      margin-top: 14px;
-      padding: 12px 12px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #12161a;
-      min-height: 90px;
-    }
+  .matrix-toggle button.active {
+    background: var(--accent-soft);
+    color: #0b0e11;
+    font-weight: 600;
+  }
 
-    .matrix-detail-heading {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--accent);
-    }
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
 
-    .matrix-detail-text {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
+  .matrix-cell {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 10px 10px 12px;
+    background: #14181c;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+    position: relative;
+    min-height: 90px;
+  }
 
-    .matrix-detail-example {
-      font-size: 0.85rem;
-      color: var(--text);
-    }
+  .matrix-cell:hover {
+    background: #171c21;
+    border-color: var(--accent-soft);
+    transform: translateY(-1px);
+  }
 
-    .mini-animation {
-      margin-top: 8px;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
+  .matrix-cell.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
 
-    .mini-animation-figure {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      background: #181c20;
-    }
+  .matrix-cell-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
 
-    .mini-animation-figure.alt {
-      border-color: var(--accent-soft);
-      background: #15191d;
-    }
+  .matrix-cell-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
 
-    /* Szenario-Builder */
+  .example-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--example-text);
+    background: var(--example-bg);
+    border: 1px solid var(--example-border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-bottom: 4px;
+  }
 
-    .builder-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
+  .example-box {
+    border-radius: 8px;
+    border: 1px solid var(--example-border);
+    background: var(--example-bg);
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    color: var(--example-text);
+  }
 
-    .builder-block {
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #14181c;
-      padding: 10px 10px 12px;
-    }
+  .matrix-detail {
+    margin-top: 14px;
+    padding: 14px 14px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #12161a;
+    min-height: 90px;
+  }
 
-    .builder-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--accent);
-    }
+  .matrix-detail-heading {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
 
-    .builder-select,
-    .builder-checkbox-group {
-      font-size: 0.85rem;
-    }
+  .matrix-detail-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
 
-    select {
-      width: 100%;
-      padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: #0f1317;
-      color: var(--text);
-      outline: none;
-      font-size: 0.85rem;
-    }
+  /* Szenario-Builder */
 
-    select:focus {
-      border-color: var(--accent-soft);
-    }
+  .builder-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
 
-    .builder-checkbox-group label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
+  .builder-block {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #14181c;
+    padding: 10px 10px 12px;
+  }
 
-    .builder-checkbox-group input {
-      accent-color: var(--accent-soft);
-    }
+  .builder-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
 
-    .builder-action {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+  .builder-checkbox-group {
+    font-size: 0.85rem;
+  }
 
-    .builder-action button {
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--accent-soft);
-      background: var(--accent-soft);
-      color: #0b0e11;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
+  select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #0f1317;
+    color: var(--text);
+    outline: none;
+    font-size: 0.85rem;
+  }
 
-    .builder-action button:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
+  select:focus {
+    border-color: var(--accent-soft);
+  }
 
-    .builder-output {
-      display: grid;
-      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr);
-      gap: 12px;
-    }
+  .builder-checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
 
-    .output-panel {
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #12161a;
-      padding: 10px 10px 12px;
-      font-size: 0.85rem;
-    }
+  .builder-checkbox-group input {
+    accent-color: var(--accent-soft);
+  }
 
-    .output-title {
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--accent);
-    }
+  .builder-action {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
 
-    .output-text {
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
+  .builder-action button {
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--accent-soft);
+    background: var(--accent-soft);
+    color: #0b0e11;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
 
-    .ampel {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 4px;
-    }
+  .builder-action button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 
-    .ampel-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
+  .builder-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
 
-    .ampel-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      background: #374151;
-    }
+  .builder-output {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr);
+    gap: 12px;
+  }
 
-    .ampel-dot.success {
-      background: var(--success);
-    }
+  .output-panel {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #12161a;
+    padding: 10px 10px 12px;
+    font-size: 0.85rem;
+  }
 
-    .ampel-dot.warning {
-      background: var(--warning);
-    }
+  .output-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
 
-    .ampel-dot.danger {
-      background: var(--danger);
-    }
+  .output-text {
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
 
-    /* Vergleichsmodus */
+  #effects-list ul {
+    margin: 0;
+    padding-left: 16px;
+    color: var(--text);
+  }
 
-    .compare-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 14px;
-    }
+  .ampel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
 
-    .compare-card {
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #14181c;
-      padding: 10px 10px 12px;
-      font-size: 0.85rem;
-    }
+  .ampel-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
 
-    .compare-title {
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--accent);
-    }
+  .ampel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: #374151;
+    flex-shrink: 0;
+  }
 
-    .compare-sub {
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      font-size: 0.8rem;
-    }
+  .ampel-dot.success { background: var(--success); }
+  .ampel-dot.warning { background: var(--warning); }
+  .ampel-dot.danger  { background: var(--danger); }
 
-    .compare-list {
-      margin: 0;
-      padding-left: 16px;
-      color: var(--text-muted);
-    }
+  .radar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
 
-    .compare-list li {
-      margin-bottom: 3px;
-    }
+  .radar-item {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #12161a;
+    padding: 8px 8px 9px;
+    font-size: 0.8rem;
+  }
 
-    /* Risiko-Radar */
+  .radar-label {
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
 
-    .radar-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 10px;
-    }
+  .radar-value {
+    font-weight: 600;
+  }
 
-    .radar-item {
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #12161a;
-      padding: 8px 8px 9px;
-      font-size: 0.8rem;
-    }
+  .reflection {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    font-size: 0.85rem;
+  }
 
-    .radar-label {
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
+  .reflection-question {
+    margin-bottom: 6px;
+    color: var(--text);
+  }
 
-    .radar-value {
-      font-weight: 600;
-    }
+  .reflection-note {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
 
-    /* Reflexion */
+  @media (max-width: 900px) {
+    .legend { grid-template-columns: minmax(0, 1fr); }
+    .matrix-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .builder-grid { grid-template-columns: minmax(0, 1fr); }
+    .builder-output { grid-template-columns: minmax(0, 1fr); }
+    .radar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 
-    .reflection {
-      margin-top: 12px;
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-      font-size: 0.85rem;
-    }
-
-    .reflection-question {
-      margin-bottom: 6px;
-      color: var(--text);
-    }
-
-    .reflection-note {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-    }
-
-    /* Layout helpers */
-
-    @media (max-width: 900px) {
-      .matrix-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .builder-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .builder-output {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .compare-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .radar-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 640px) {
-      main {
-        padding: 24px 14px 32px;
-      }
-      h1 {
-        font-size: 1.5rem;
-      }
-      .matrix-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .radar-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-  </style>
+  @media (max-width: 640px) {
+    main { padding: 24px 14px 32px; }
+    h1 { font-size: 1.5rem; }
+    .matrix-grid { grid-template-columns: minmax(0, 1fr); }
+    .radar-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
 </head>
 <body>
 <main>
@@ -440,13 +415,29 @@
     <h1>Beyer‑Matrix interaktiv verstehen</h1>
     <p class="lead">
       Dieses Tool macht das Strukturmodell von K. Beyer erfahrbar: Erziehungsziele, Mittel, Bedingungen und Wirkungen
-      werden sowohl funktional (technologisch) als auch wertend (axiologisch) betrachtet – am Beispiel „Schnuller abgewöhnen“.
+      werden sowohl funktional (technologisch) als auch wertend (axiologisch) betrachtet – am Beispiel
+      „Schnuller abgewöhnen“.
     </p>
   </header>
 
   <!-- Matrix-Explorer -->
   <section class="section">
     <div class="section-title">Überblick über die vier Felder der Beyer‑Matrix</div>
+    <p class="section-subtitle">
+      Die Beyer‑Matrix betrachtet jedes Feld aus zwei Blickwinkeln. Wähle unten eine Perspektive und klicke dann auf
+      ein Feld, um die Erklärung dazu zu sehen.
+    </p>
+
+    <div class="legend">
+      <div class="legend-item">
+        <strong>Technologisch – „Klappt es?“</strong>
+        <span>Rein funktionale Sicht: Ist das Vorgehen wirksam und erfolgversprechend, um das Ziel zu erreichen?</span>
+      </div>
+      <div class="legend-item">
+        <strong>Axiologisch – „Ist es gut?“</strong>
+        <span>Wertende Sicht: Ist das Vorgehen pädagogisch verantwortbar, kindgerecht und legitim?</span>
+      </div>
+    </div>
 
     <div class="matrix-toggle">
       <button type="button" class="active" id="toggle-tech">Technologische Perspektive</button>
@@ -458,44 +449,32 @@
       <div class="matrix-cell" data-field="zwecke">
         <div class="matrix-cell-title">Zwecke</div>
         <div class="matrix-cell-sub">Erziehungsziele des Handelns</div>
-        <div class="matrix-cell-body">
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            Beispiel: „Schnuller abgewöhnen, um Selbstregulation zu fördern.“
-          </div>
-        </div>
+        <div class="example-tag">Beispiel</div>
+        <div class="example-box">„Schnuller abgewöhnen, um Selbstregulation zu fördern.“</div>
       </div>
 
       <!-- MITTEL -->
       <div class="matrix-cell" data-field="mittel">
         <div class="matrix-cell-title">Mittel</div>
         <div class="matrix-cell-sub">Konkrete Handlungsmöglichkeiten</div>
-        <div class="matrix-cell-body">
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            Beispiel: „Schrittweise reduzieren statt abrupt wegnehmen.“
-          </div>
-        </div>
+        <div class="example-tag">Beispiel</div>
+        <div class="example-box">„Schrittweise reduzieren statt abrupt wegnehmen.“</div>
       </div>
 
       <!-- BEDINGUNGSFELD -->
       <div class="matrix-cell" data-field="bedingungen">
         <div class="matrix-cell-title">Bedingungsfeld</div>
         <div class="matrix-cell-sub">Kontext und Voraussetzungen</div>
-        <div class="matrix-cell-body">
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            Beispiel: „Kind ist ängstlich, Eltern uneinig, hohe Belastung.“
-          </div>
-        </div>
+        <div class="example-tag">Beispiel</div>
+        <div class="example-box">„Kind ist ängstlich, Eltern uneinig, hohe Belastung.“</div>
       </div>
 
       <!-- WIRKUNGSHYPOTHESEN -->
       <div class="matrix-cell" data-field="wirkungen">
         <div class="matrix-cell-title">Wirkungshypothesen</div>
         <div class="matrix-cell-sub">Absehbare Nebenwirkungen</div>
-        <div class="matrix-cell-body">
-          <div style="font-size:0.8rem;color:var(--text-muted);">
-            Beispiel: „Kurzfristige Unruhe, Trotzreaktionen, langfristig bessere Selbstregulation.“
-          </div>
-        </div>
+        <div class="example-tag">Beispiel</div>
+        <div class="example-box">„Kurzfristige Unruhe, Trotzreaktionen, langfristig bessere Selbstregulation.“</div>
       </div>
     </div>
 
@@ -505,53 +484,41 @@
         Klicke auf eines der vier Felder, um zu sehen, wie es in der Beyer‑Matrix beschrieben wird – einmal funktional
         (technologisch: „klappt es?“) und einmal wertend (axiologisch: „ist es gut?“).
       </div>
-      <div class="matrix-detail-example"></div>
-      <div class="mini-animation">
-        <div class="mini-animation-figure">K</div>
-        <div class="mini-animation-figure alt">K</div>
-        <div>Symbolisch: Kind mit Schnuller / Kind ohne Schnuller – gleiche Situation, unterschiedliche Bewertung.</div>
-      </div>
+      <div id="matrix-detail-example-wrap"></div>
     </div>
   </section>
 
   <!-- Interaktives Modul: Was würde passieren, wenn...? -->
   <section class="section">
     <div class="section-title">Konsequenzen pädagogischen Handelns erkunden</div>
-    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
-      Hier kannst du ein Szenario zum Schnuller‑Abgewöhnen zusammenstellen. Das System zeigt dir, welche Wirkungen
-      wahrscheinlich sind und wie das Vorgehen technologisch (funktional) und axiologisch (wertend) einzuschätzen ist.
+    <p class="section-subtitle">
+      Stelle ein Szenario zum Schnuller‑Abgewöhnen zusammen. Das System zeigt dir, welche Wirkungen wahrscheinlich
+      sind und wie das Vorgehen technologisch (funktional) und axiologisch (wertend) einzuschätzen ist.
     </p>
 
     <!-- Szenario-Builder -->
     <div class="builder-grid">
-      <!-- Zwecke -->
       <div class="builder-block">
         <div class="builder-label">Ziel des Handelns (Zweck)</div>
-        <div class="builder-select">
-          <select id="select-purpose">
-            <option value="">Bitte wählen</option>
-            <option value="zahn">Schnuller abgewöhnen, um Zahnfehlstellungen zu vermeiden</option>
-            <option value="selbstreg">Schnuller abgewöhnen, um Selbstregulation zu fördern</option>
-            <option value="genervt">Schnuller abgewöhnen, weil Eltern genervt sind</option>
-          </select>
-        </div>
+        <select id="select-purpose">
+          <option value="">Bitte wählen</option>
+          <option value="zahn">Schnuller abgewöhnen, um Zahnfehlstellungen zu vermeiden</option>
+          <option value="selbstreg">Schnuller abgewöhnen, um Selbstregulation zu fördern</option>
+          <option value="genervt">Schnuller abgewöhnen, weil Eltern genervt sind</option>
+        </select>
       </div>
 
-      <!-- Mittel -->
       <div class="builder-block">
         <div class="builder-label">Art des Vorgehens (Mittel)</div>
-        <div class="builder-select">
-          <select id="select-means">
-            <option value="">Bitte wählen</option>
-            <option value="abrupt">Abrupt wegnehmen</option>
-            <option value="schritt">Schrittweise reduzieren</option>
-            <option value="einschlafen">Nur noch zum Einschlafen erlauben</option>
-            <option value="ritual">Abschiedsritual mit Kind gestalten</option>
-          </select>
-        </div>
+        <select id="select-means">
+          <option value="">Bitte wählen</option>
+          <option value="abrupt">Abrupt wegnehmen</option>
+          <option value="schritt">Schrittweise reduzieren</option>
+          <option value="einschlafen">Nur noch zum Einschlafen erlauben</option>
+          <option value="ritual">Abschiedsritual mit Kind gestalten</option>
+        </select>
       </div>
 
-      <!-- Bedingungen -->
       <div class="builder-block">
         <div class="builder-label">Kontext und Bedingungen</div>
         <div class="builder-checkbox-group" id="conditions-group">
@@ -565,14 +532,11 @@
 
     <div class="builder-action">
       <button type="button" id="btn-simulate" disabled>Was würde passieren, wenn …?</button>
-      <div style="font-size:0.8rem;color:var(--text-muted);">
-        Aktiviere den Button, indem du Ziel, Mittel und mindestens eine Bedingung auswählst.
-      </div>
+      <div class="builder-hint">Aktiviere den Button, indem du Ziel, Mittel und mindestens eine Bedingung auswählst.</div>
     </div>
 
     <div class="builder-output">
-      <!-- Wirkungshypothesen -->
-      <div class="output-panel" id="output-effects">
+      <div class="output-panel">
         <div class="output-title">Erwartete Wirkungshypothesen</div>
         <div class="output-text">
           Hier erscheinen die absehbaren Nebenwirkungen des gewählten Vorgehens – z.B. kurzfristige Unruhe,
@@ -581,8 +545,7 @@
         <div id="effects-list"></div>
       </div>
 
-      <!-- Ampel-Bewertung -->
-      <div class="output-panel" id="output-rating">
+      <div class="output-panel">
         <div class="output-title">Bewertung des Vorgehens</div>
         <div class="output-text">
           Die Ampel zeigt, wie das Szenario funktional (technologisch) und wertend (axiologisch) einzuschätzen ist.
@@ -600,14 +563,11 @@
       </div>
     </div>
 
-
-
-    <!-- Risiko-Radar -->
     <div class="output-panel" style="margin-top:14px;">
       <div class="output-title">Risiko‑Radar für das gewählte Mittel</div>
       <div class="output-text">
-        Die Einschätzung bezieht sich auf das aktuell ausgewählte Vorgehen. Sie ist modellhaft und soll zum Nachdenken
-        anregen, nicht starre Regeln vorgeben.
+        Die Einschätzung bezieht sich auf das aktuell ausgewählte Vorgehen. Sie ist modellhaft und soll zum
+        Nachdenken anregen, nicht starre Regeln vorgeben.
       </div>
       <div class="radar-grid">
         <div class="radar-item">
@@ -624,14 +584,13 @@
         </div>
       </div>
 
-      <!-- Reflexions-Modus -->
       <div class="reflection">
         <div class="reflection-question">
           Würdest du dieses Vorgehen verantworten? Welche Nebenwirkung wäre für dich nicht akzeptabel?
         </div>
         <div class="reflection-note">
-          Diese Fragen zielen auf die axiologische Ebene: Nicht nur, ob etwas funktioniert, sondern ob es pädagogisch
-          vertretbar ist.
+          Diese Fragen zielen auf die axiologische Ebene: Nicht nur, ob etwas funktioniert, sondern ob es
+          pädagogisch vertretbar ist.
         </div>
       </div>
     </div>
@@ -639,6 +598,9 @@
 </main>
 
 <script>
+(function () {
+  "use strict";
+
   // Daten für Matrix-Explorer
   const matrixData = {
     zwecke: {
@@ -662,7 +624,7 @@
       axio: {
         title: "Mittel – axiologische Perspektive",
         text: "Axiologisch wird bewertet, ob die Mittel kindgerecht, verantwortungsvoll und nicht überfordernd sind.",
-        example: "Ein Abschrittsritual mit dem Kind ist axiologisch eher wünschenswert als ein abruptes Verbot."
+        example: "Ein Abschiedsritual mit dem Kind ist axiologisch eher wünschenswert als ein abruptes Verbot."
       }
     },
     bedingungen: {
@@ -693,18 +655,41 @@
 
   const detailHeading = document.querySelector(".matrix-detail-heading");
   const detailText = document.querySelector(".matrix-detail-text");
-  const detailExample = document.querySelector(".matrix-detail-example");
+  const detailExampleWrap = document.getElementById("matrix-detail-example-wrap");
   const toggleTech = document.getElementById("toggle-tech");
   const toggleAxio = document.getElementById("toggle-axio");
+  const matrixCells = document.querySelectorAll(".matrix-cell");
   let currentPerspective = "tech";
 
-  document.querySelectorAll(".matrix-cell").forEach(cell => {
+  function renderExample(text) {
+    detailExampleWrap.innerHTML = "";
+    if (!text) return;
+    const tag = document.createElement("div");
+    tag.className = "example-tag";
+    tag.textContent = "Beispiel";
+    const box = document.createElement("div");
+    box.className = "example-box";
+    box.textContent = text;
+    detailExampleWrap.appendChild(tag);
+    detailExampleWrap.appendChild(box);
+  }
+
+  function resetDetailPanel(introText) {
+    detailHeading.textContent = "Feld auswählen, um Details zu sehen";
+    detailText.textContent = introText;
+    renderExample("");
+    matrixCells.forEach(c => c.classList.remove("selected"));
+  }
+
+  matrixCells.forEach(cell => {
     cell.addEventListener("click", () => {
       const field = cell.getAttribute("data-field");
       const data = matrixData[field][currentPerspective];
       detailHeading.textContent = data.title;
       detailText.textContent = data.text;
-      detailExample.textContent = data.example;
+      renderExample(data.example);
+      matrixCells.forEach(c => c.classList.remove("selected"));
+      cell.classList.add("selected");
     });
   });
 
@@ -712,81 +697,76 @@
     currentPerspective = "tech";
     toggleTech.classList.add("active");
     toggleAxio.classList.remove("active");
-    detailHeading.textContent = "Feld auswählen, um Details zu sehen";
-    detailText.textContent = "Klicke auf eines der vier Felder, um die technologische Perspektive zu sehen: Funktionalität und Erfolgswahrscheinlichkeit.";
-    detailExample.textContent = "";
+    resetDetailPanel("Klicke auf eines der vier Felder, um die technologische Perspektive zu sehen: Funktionalität und Erfolgswahrscheinlichkeit.");
   });
 
   toggleAxio.addEventListener("click", () => {
     currentPerspective = "axio";
     toggleAxio.classList.add("active");
     toggleTech.classList.remove("active");
-    detailHeading.textContent = "Feld auswählen, um Details zu sehen";
-    detailText.textContent = "Klicke auf eines der vier Felder, um die axiologische Perspektive zu sehen: Werte, Legitimation und pädagogische Vertretbarkeit.";
-    detailExample.textContent = "";
+    resetDetailPanel("Klicke auf eines der vier Felder, um die axiologische Perspektive zu sehen: Werte, Legitimation und pädagogische Vertretbarkeit.");
   });
 
   // Daten für Szenario-Builder
   const purposeProfiles = {
     zahn: {
-      tech: "Ziel ist klar formuliert und grundsätzlich erreichbar: Zahnfehlstellungen zu vermeiden ist funktional sinnvoll.",
-      axio: "Axiologisch ist das Ziel wünschenswert, da es Gesundheit und Entwicklung des Kindes berücksichtigt.",
-      baseEffects: ["Langfristig geringeres Risiko für Zahnfehlstellungen.", "Kind muss lernen, andere Beruhigungsstrategien zu nutzen."]
+      baseEffects: [
+        "Langfristig geringeres Risiko für Zahnfehlstellungen.",
+        "Kind muss lernen, andere Beruhigungsstrategien zu nutzen."
+      ]
     },
     selbstreg: {
-      tech: "Ziel ist klar und funktional sinnvoll: Selbstregulation zu fördern ist ein pädagogisch tragfähiger Zweck.",
-      axio: "Axiologisch sehr wünschenswert, da das Kind in seiner emotionalen Entwicklung gestärkt wird.",
-      baseEffects: ["Langfristig bessere Selbstregulation.", "Kurzfristig kann das Kind mehr Nähe und Unterstützung brauchen."]
+      baseEffects: [
+        "Langfristig bessere Selbstregulation.",
+        "Kurzfristig kann das Kind mehr Nähe und Unterstützung brauchen."
+      ]
     },
     genervt: {
-      tech: "Ziel ist funktional möglich, aber unscharf: „Eltern sind genervt“ ist kein pädagogisch präziser Zweck.",
-      axio: "Axiologisch fragwürdig, da das Ziel primär die Entlastung der Erwachsenen und nicht die Entwicklung des Kindes fokussiert.",
-      baseEffects: ["Kind könnte das Gefühl bekommen, selbst das Problem zu sein.", "Vertrauen kann belastet werden, wenn das Vorgehen als willkürlich erlebt wird."]
+      baseEffects: [
+        "Kind könnte das Gefühl bekommen, selbst das Problem zu sein.",
+        "Vertrauen kann belastet werden, wenn das Vorgehen als willkürlich erlebt wird."
+      ]
     }
   };
 
   const meansProfiles = {
     abrupt: {
-      tech: "Abruptes Wegnehmen kann das Ziel erreichen, ist aber mit hohem Risiko verbunden.",
-      axio: "Axiologisch oft problematisch, da das Kind stark überfordert werden kann.",
-      effects: ["Kurzfristig hohe Unruhe.", "Starke Trotzreaktionen.", "Mögliche Angst oder Verunsicherung."]
+      effects: ["Kurzfristig hohe Unruhe.", "Starke Trotzreaktionen.", "Mögliche Angst oder Verunsicherung."],
+      radar: { risk: "hoch", load: "hoch", benefit: "mittel" }
     },
     schritt: {
-      tech: "Schrittweise Reduktion ist technologisch meist sehr erfolgsversprechend.",
-      axio: "Axiologisch eher kindgerecht, da das Kind sich anpassen kann.",
-      effects: ["Moderate Unruhe.", "Kind kann neue Routinen lernen.", "Langfristig stabile Selbstregulation."]
+      effects: ["Moderate Unruhe.", "Kind kann neue Routinen lernen.", "Langfristig stabile Selbstregulation."],
+      radar: { risk: "mittel", load: "mittel", benefit: "hoch" }
     },
     einschlafen: {
-      tech: "Nur noch zum Einschlafen erlauben ist ein Zwischenweg, der funktional helfen kann.",
-      axio: "Axiologisch vertretbar, wenn klar kommuniziert und nicht beliebig gehandhabt.",
-      effects: ["Unruhe vor Situationen ohne Schnuller.", "Kind verknüpft Schnuller stark mit Einschlafsituation.", "Reduktion gelingt schrittweise."]
+      effects: [
+        "Unruhe vor Situationen ohne Schnuller.",
+        "Kind verknüpft Schnuller stark mit Einschlafsituation.",
+        "Reduktion gelingt schrittweise."
+      ],
+      radar: { risk: "mittel", load: "mittel", benefit: "mittel" }
     },
     ritual: {
-      tech: "Ein Abschiedsritual kann das Ziel unterstützen, wenn es konsequent umgesetzt wird.",
-      axio: "Axiologisch sehr wünschenswert, da das Kind aktiv beteiligt wird.",
-      effects: ["Emotionale Verarbeitung wird erleichtert.", "Kind erlebt Selbstwirksamkeit.", "Kurzfristig Traurigkeit, langfristig positive Bewältigung."]
+      effects: [
+        "Emotionale Verarbeitung wird erleichtert.",
+        "Kind erlebt Selbstwirksamkeit.",
+        "Kurzfristig Traurigkeit, langfristig positive Bewältigung."
+      ],
+      radar: { risk: "gering", load: "mittel", benefit: "hoch" }
     }
   };
 
   const conditionProfiles = {
     aengstlich: {
-      tech: "Ängstlichkeit des Kindes ist technologisch eher hinderlich.",
-      axio: "Axiologisch erfordert dies besondere Sensibilität und behutsames Vorgehen.",
       effects: ["Erhöhte Wahrscheinlichkeit für Angstreaktionen.", "Kind braucht mehr emotionale Begleitung."]
     },
     uneinig: {
-      tech: "Uneinigkeit der Eltern ist technologisch hinderlich, da Inkonsistenz das Vorgehen schwächt.",
-      axio: "Axiologisch problematisch, da das Kind widersprüchliche Signale erhält.",
       effects: ["Kind erlebt Unsicherheit.", "Regeln werden als wechselhaft erlebt."]
     },
     belastung: {
-      tech: "Hohe Belastung (Umzug, Kita‑Start) ist technologisch eher ungünstig für zusätzliche Veränderungen.",
-      axio: "Axiologisch sollte geprüft werden, ob der Zeitpunkt verantwortungsvoll ist.",
       effects: ["Kind kann überfordert sein.", "Neue Anforderungen überlagern sich."]
     },
     ruhig: {
-      tech: "Eine stabile, ruhige Phase ist technologisch förderlich.",
-      axio: "Axiologisch wünschenswert, da das Kind Ressourcen für Veränderung hat.",
       effects: ["Kind kann Veränderungen besser verarbeiten.", "Weniger Risiko für Überforderung."]
     }
   };
@@ -802,45 +782,29 @@
   const radarLoad = document.getElementById("radar-load");
   const radarBenefit = document.getElementById("radar-benefit");
 
+  function getCheckedConditions() {
+    return Array.from(conditionsGroup.querySelectorAll("input:checked")).map(c => c.value);
+  }
+
   function updateButtonState() {
     const purpose = selectPurpose.value;
     const means = selectMeans.value;
-    const conditions = Array.from(conditionsGroup.querySelectorAll("input:checked")).map(c => c.value);
+    const conditions = getCheckedConditions();
     btnSimulate.disabled = !(purpose && means && conditions.length > 0);
   }
 
-  selectPurpose.addEventListener("change", updateButtonState);
-  selectMeans.addEventListener("change", () => {
-    updateButtonState();
-    updateRadar();
-  });
-  conditionsGroup.querySelectorAll("input").forEach(input => {
-    input.addEventListener("change", updateButtonState);
-  });
-
   function updateRadar() {
-    const means = selectMeans.value;
-    let risk = "–", load = "–", benefit = "–";
-    if (means === "abrupt") {
-      risk = "hoch";
-      load = "hoch";
-      benefit = "mittel";
-    } else if (means === "schritt") {
-      risk = "mittel";
-      load = "mittel";
-      benefit = "hoch";
-    } else if (means === "einschlafen") {
-      risk = "mittel";
-      load = "mittel";
-      benefit = "mittel";
-    } else if (means === "ritual") {
-      risk = "gering";
-      load = "mittel";
-      benefit = "hoch";
+    const meansKey = selectMeans.value;
+    const profile = meansProfiles[meansKey];
+    if (profile) {
+      radarRisk.textContent = profile.radar.risk;
+      radarLoad.textContent = profile.radar.load;
+      radarBenefit.textContent = profile.radar.benefit;
+    } else {
+      radarRisk.textContent = "–";
+      radarLoad.textContent = "–";
+      radarBenefit.textContent = "–";
     }
-    radarRisk.textContent = risk;
-    radarLoad.textContent = load;
-    radarBenefit.textContent = benefit;
   }
 
   function setAmpel(techLevel, axioLevel) {
@@ -848,34 +812,25 @@
     dotAxio.className = "ampel-dot " + axioLevel;
   }
 
-  btnSimulate.addEventListener("click", () => {
+  function runSimulation() {
     const purposeKey = selectPurpose.value;
     const meansKey = selectMeans.value;
-    const conditionKeys = Array.from(conditionsGroup.querySelectorAll("input:checked")).map(c => c.value);
+    const conditionKeys = getCheckedConditions();
 
     const purpose = purposeProfiles[purposeKey];
     const means = meansProfiles[meansKey];
 
     const effects = [];
-    if (purpose && purpose.baseEffects) {
-      effects.push(...purpose.baseEffects);
-    }
-    if (means && means.effects) {
-      effects.push(...means.effects);
-    }
+    if (purpose && purpose.baseEffects) effects.push(...purpose.baseEffects);
+    if (means && means.effects) effects.push(...means.effects);
     conditionKeys.forEach(key => {
       const cond = conditionProfiles[key];
-      if (cond && cond.effects) {
-        effects.push(...cond.effects);
-      }
+      if (cond && cond.effects) effects.push(...cond.effects);
     });
 
     effectsList.innerHTML = "";
     if (effects.length > 0) {
       const ul = document.createElement("ul");
-      ul.style.margin = "0";
-      ul.style.paddingLeft = "16px";
-      ul.style.color = "var(--text)";
       effects.forEach(e => {
         const li = document.createElement("li");
         li.textContent = e;
@@ -890,29 +845,20 @@
     let techLevel = "warning";
     let axioLevel = "warning";
 
-    // Technologisch
     if (meansKey === "schritt" || meansKey === "ritual") {
       techLevel = "success";
     } else if (meansKey === "abrupt") {
       techLevel = "danger";
-    } else {
-      techLevel = "warning";
     }
 
-    // Axiologisch
-    if (purposeKey === "genervt") {
-      axioLevel = "danger";
-    } else if (meansKey === "abrupt") {
+    if (purposeKey === "genervt" || meansKey === "abrupt") {
       axioLevel = "danger";
     } else if (meansKey === "ritual" || purposeKey === "selbstreg") {
       axioLevel = "success";
-    } else {
-      axioLevel = "warning";
     }
 
-    // Bedingungen beeinflussen Einschätzung
-    if (conditionKeys.includes("ruhig")) {
-      if (techLevel === "warning") techLevel = "success";
+    if (conditionKeys.includes("ruhig") && techLevel === "warning") {
+      techLevel = "success";
     }
     if (conditionKeys.includes("belastung") || conditionKeys.includes("uneinig")) {
       if (techLevel === "success") techLevel = "warning";
@@ -924,7 +870,18 @@
     }
 
     setAmpel(techLevel, axioLevel);
+  }
+
+  selectPurpose.addEventListener("change", updateButtonState);
+  selectMeans.addEventListener("change", function () {
+    updateButtonState();
+    updateRadar();
   });
+  conditionsGroup.querySelectorAll("input").forEach(input => {
+    input.addEventListener("change", updateButtonState);
+  });
+  btnSimulate.addEventListener("click", runSimulation);
+})();
 </script>
 </body>
 </html>
