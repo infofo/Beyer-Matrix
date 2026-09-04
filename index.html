@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Beyer-Matrix – Interaktives Lerntool</title>
+  <style>
+    :root {
+      --bg: #111417;
+      --bg-panel: #181c20;
+      --bg-panel-alt: #1f2429;
+      --border: #2a3138;
+      --accent: #c49a4a;
+      --accent-soft: #8b6a2f;
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #b91c1c;
+      --warning: #b45309;
+      --success: #15803d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #15191d 0, #0b0e11 40%, #050608 100%);
+      color: var(--text);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+
+    p.lead {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: var(--text-muted);
+      max-width: 720px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+      padding: 20px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--bg-panel) 0, var(--bg-panel-alt) 100%);
+      border: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .matrix-toggle {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .matrix-toggle button {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .matrix-toggle button.active {
+      background: var(--accent-soft);
+      color: #0b0e11;
+      font-weight: 600;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .matrix-cell {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 10px 12px;
+      background: #14181c;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+      position: relative;
+      min-height: 90px;
+    }
+
+    .matrix-cell:hover {
+      background: #171c21;
+      border-color: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+
+    .matrix-cell-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--accent);
+    }
+
+    .matrix-cell-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .matrix-detail {
+      margin-top: 14px;
+      padding: 12px 12px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #12161a;
+      min-height: 90px;
+    }
+
+    .matrix-detail-heading {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .matrix-detail-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .matrix-detail-example {
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .mini-animation {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .mini-animation-figure {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      background: #181c20;
+    }
+
+    .mini-animation-figure.alt {
+      border-color: var(--accent-soft);
+      background: #15191d;
+    }
+
+    /* Szenario-Builder */
+
+    .builder-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .builder-block {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #14181c;
+      padding: 10px 10px 12px;
+    }
+
+    .builder-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .builder-select,
+    .builder-checkbox-group {
+      font-size: 0.85rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0f1317;
+      color: var(--text);
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    select:focus {
+      border-color: var(--accent-soft);
+    }
+
+    .builder-checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .builder-checkbox-group input {
+      accent-color: var(--accent-soft);
+    }
+
+    .builder-action {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .builder-action button {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-soft);
+      background: var(--accent-soft);
+      color: #0b0e11;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .builder-action button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .builder-output {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.2fr);
+      gap: 12px;
+    }
+
+    .output-panel {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #12161a;
+      padding: 10px 10px 12px;
+      font-size: 0.85rem;
+    }
+
+    .output-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .output-text {
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .ampel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .ampel-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .ampel-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #374151;
+    }
+
+    .ampel-dot.success {
+      background: var(--success);
+    }
+
+    .ampel-dot.warning {
+      background: var(--warning);
+    }
+
+    .ampel-dot.danger {
+      background: var(--danger);
+    }
+
+    /* Vergleichsmodus */
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .compare-card {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #14181c;
+      padding: 10px 10px 12px;
+      font-size: 0.85rem;
+    }
+
+    .compare-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--accent);
+    }
+
+    .compare-sub {
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+
+    .compare-list {
+      margin: 0;
+      padding-left: 16px;
+      color: var(--text-muted);
+    }
+
+    .compare-list li {
+      margin-bottom: 3px;
+    }
+
+    /* Risiko-Radar */
+
+    .radar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .radar-item {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #12161a;
+      padding: 8px 8px 9px;
+      font-size: 0.8rem;
+    }
+
+    .radar-label {
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .radar-value {
+      font-weight: 600;
+    }
+
+    /* Reflexion */
+
+    .reflection {
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    .reflection-question {
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .reflection-note {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* Layout helpers */
+
+    @media (max-width: 900px) {
+      .matrix-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .builder-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .builder-output {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .compare-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .radar-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 24px 14px 32px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .matrix-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .radar-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Beyer‑Matrix interaktiv verstehen</h1>
+    <p class="lead">
+      Dieses Tool macht das Strukturmodell von K. Beyer erfahrbar: Erziehungsziele, Mittel, Bedingungen und Wirkungen
+      werden sowohl funktional (technologisch) als auch wertend (axiologisch) betrachtet – am Beispiel „Schnuller abgewöhnen“.
+    </p>
+  </header>
+
+  <!-- Matrix-Explorer -->
+  <section class="section">
+    <div class="section-title">Überblick über die vier Felder der Beyer‑Matrix</div>
+
+    <div class="matrix-toggle">
+      <button type="button" class="active" id="toggle-tech">Technologische Perspektive</button>
+      <button type="button" id="toggle-axio">Axiologische Perspektive</button>
+    </div>
+
+    <div class="matrix-grid" id="matrix-grid">
+      <!-- ZWECKE -->
+      <div class="matrix-cell" data-field="zwecke">
+        <div class="matrix-cell-title">Zwecke</div>
+        <div class="matrix-cell-sub">Erziehungsziele des Handelns</div>
+        <div class="matrix-cell-body">
+          <div style="font-size:0.8rem;color:var(--text-muted);">
+            Beispiel: „Schnuller abgewöhnen, um Selbstregulation zu fördern.“
+          </div>
+        </div>
+      </div>
+
+      <!-- MITTEL -->
+      <div class="matrix-cell" data-field="mittel">
+        <div class="matrix-cell-title">Mittel</div>
+        <div class="matrix-cell-sub">Konkrete Handlungsmöglichkeiten</div>
+        <div class="matrix-cell-body">
+          <div style="font-size:0.8rem;color:var(--text-muted);">
+            Beispiel: „Schrittweise reduzieren statt abrupt wegnehmen.“
+          </div>
+        </div>
+      </div>
+
+      <!-- BEDINGUNGSFELD -->
+      <div class="matrix-cell" data-field="bedingungen">
+        <div class="matrix-cell-title">Bedingungsfeld</div>
+        <div class="matrix-cell-sub">Kontext und Voraussetzungen</div>
+        <div class="matrix-cell-body">
+          <div style="font-size:0.8rem;color:var(--text-muted);">
+            Beispiel: „Kind ist ängstlich, Eltern uneinig, hohe Belastung.“
+          </div>
+        </div>
+      </div>
+
+      <!-- WIRKUNGSHYPOTHESEN -->
+      <div class="matrix-cell" data-field="wirkungen">
+        <div class="matrix-cell-title">Wirkungshypothesen</div>
+        <div class="matrix-cell-sub">Absehbare Nebenwirkungen</div>
+        <div class="matrix-cell-body">
+          <div style="font-size:0.8rem;color:var(--text-muted);">
+            Beispiel: „Kurzfristige Unruhe, Trotzreaktionen, langfristig bessere Selbstregulation.“
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-detail" id="matrix-detail">
+      <div class="matrix-detail-heading">Feld auswählen, um Details zu sehen</div>
+      <div class="matrix-detail-text">
+        Klicke auf eines der vier Felder, um zu sehen, wie es in der Beyer‑Matrix beschrieben wird – einmal funktional
+        (technologisch: „klappt es?“) und einmal wertend (axiologisch: „ist es gut?“).
+      </div>
+      <div class="matrix-detail-example"></div>
+      <div class="mini-animation">
+        <div class="mini-animation-figure">K</div>
+        <div class="mini-animation-figure alt">K</div>
+        <div>Symbolisch: Kind mit Schnuller / Kind ohne Schnuller – gleiche Situation, unterschiedliche Bewertung.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interaktives Modul: Was würde passieren, wenn...? -->
+  <section class="section">
+    <div class="section-title">Konsequenzen pädagogischen Handelns erkunden</div>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;">
+      Hier kannst du ein Szenario zum Schnuller‑Abgewöhnen zusammenstellen. Das System zeigt dir, welche Wirkungen
+      wahrscheinlich sind und wie das Vorgehen technologisch (funktional) und axiologisch (wertend) einzuschätzen ist.
+    </p>
+
+    <!-- Szenario-Builder -->
+    <div class="builder-grid">
+      <!-- Zwecke -->
+      <div class="builder-block">
+        <div class="builder-label">Ziel des Handelns (Zweck)</div>
+        <div class="builder-select">
+          <select id="select-purpose">
+            <option value="">Bitte wählen</option>
+            <option value="zahn">Schnuller abgewöhnen, um Zahnfehlstellungen zu vermeiden</option>
+            <option value="selbstreg">Schnuller abgewöhnen, um Selbstregulation zu fördern</option>
+            <option value="genervt">Schnuller abgewöhnen, weil Eltern genervt sind</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mittel -->
+      <div class="builder-block">
+        <div class="builder-label">Art des Vorgehens (Mittel)</div>
+        <div class="builder-select">
+          <select id="select-means">
+            <option value="">Bitte wählen</option>
+            <option value="abrupt">Abrupt wegnehmen</option>
+            <option value="schritt">Schrittweise reduzieren</option>
+            <option value="einschlafen">Nur noch zum Einschlafen erlauben</option>
+            <option value="ritual">Abschiedsritual mit Kind gestalten</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Bedingungen -->
+      <div class="builder-block">
+        <div class="builder-label">Kontext und Bedingungen</div>
+        <div class="builder-checkbox-group" id="conditions-group">
+          <label><input type="checkbox" value="aengstlich"> Kind ist sehr ängstlich</label>
+          <label><input type="checkbox" value="uneinig"> Eltern sind uneinig</label>
+          <label><input type="checkbox" value="belastung"> Hohe Belastung (Umzug, Kita‑Start)</label>
+          <label><input type="checkbox" value="ruhig"> Stabile, ruhige Phase</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="builder-action">
+      <button type="button" id="btn-simulate" disabled>Was würde passieren, wenn …?</button>
+      <div style="font-size:0.8rem;color:var(--text-muted);">
+        Aktiviere den Button, indem du Ziel, Mittel und mindestens eine Bedingung auswählst.
+      </div>
+    </div>
+
+    <div class="builder-output">
+      <!-- Wirkungshypothesen -->
+      <div class="output-panel" id="output-effects">
+        <div class="output-title">Erwartete Wirkungshypothesen</div>
+        <div class="output-text">
+          Hier erscheinen die absehbaren Nebenwirkungen des gewählten Vorgehens – z.B. kurzfristige Unruhe,
+          Trotzreaktionen oder langfristig bessere Selbstregulation.
+        </div>
+        <div id="effects-list"></div>
+      </div>
+
+      <!-- Ampel-Bewertung -->
+      <div class="output-panel" id="output-rating">
+        <div class="output-title">Bewertung des Vorgehens</div>
+        <div class="output-text">
+          Die Ampel zeigt, wie das Szenario funktional (technologisch) und wertend (axiologisch) einzuschätzen ist.
+        </div>
+        <div class="ampel">
+          <div class="ampel-item">
+            <div class="ampel-dot" id="dot-tech"></div>
+            <div>Technologisch: „klappt es?“</div>
+          </div>
+          <div class="ampel-item">
+            <div class="ampel-dot" id="dot-axio"></div>
+            <div>Axiologisch: „ist es gut?“</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Risiko-Radar -->
+    <div class="output-panel" style="margin-top:14px;">
+      <div class="output-title">Risiko‑Radar für das gewählte Mittel</div>
+      <div class="output-text">
+        Die Einschätzung bezieht sich auf das aktuell ausgewählte Vorgehen. Sie ist modellhaft und soll zum Nachdenken
+        anregen, nicht starre Regeln vorgeben.
+      </div>
+      <div class="radar-grid">
+        <div class="radar-item">
+          <div class="radar-label">Risiko</div>
+          <div class="radar-value" id="radar-risk">–</div>
+        </div>
+        <div class="radar-item">
+          <div class="radar-label">Belastung für das Kind</div>
+          <div class="radar-value" id="radar-load">–</div>
+        </div>
+        <div class="radar-item">
+          <div class="radar-label">Langfristiger Nutzen</div>
+          <div class="radar-value" id="radar-benefit">–</div>
+        </div>
+      </div>
+
+      <!-- Reflexions-Modus -->
+      <div class="reflection">
+        <div class="reflection-question">
+          Würdest du dieses Vorgehen verantworten? Welche Nebenwirkung wäre für dich nicht akzeptabel?
+        </div>
+        <div class="reflection-note">
+          Diese Fragen zielen auf die axiologische Ebene: Nicht nur, ob etwas funktioniert, sondern ob es pädagogisch
+          vertretbar ist.
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Daten für Matrix-Explorer
+  const matrixData = {
+    zwecke: {
+      tech: {
+        title: "Zwecke – technologische Perspektive",
+        text: "Zwecke sind die Erziehungsziele, die erreicht werden sollen. Technologisch wird gefragt, ob das Ziel klar formuliert und unter den gegebenen Bedingungen überhaupt erreichbar ist.",
+        example: "„Schnuller abgewöhnen, um Selbstregulation zu fördern“ ist ein klarer, funktional sinnvoller Zweck."
+      },
+      axio: {
+        title: "Zwecke – axiologische Perspektive",
+        text: "Axiologisch wird bewertet, ob das Ziel pädagogisch wünschenswert und legitim ist. Es geht um Werte, nicht nur um Funktionalität.",
+        example: "„Schnuller abgewöhnen, weil Eltern genervt sind“ ist funktional möglich, aber axiologisch fragwürdig."
+      }
+    },
+    mittel: {
+      tech: {
+        title: "Mittel – technologische Perspektive",
+        text: "Mittel sind die konkreten Handlungsmöglichkeiten. Technologisch wird gefragt, ob sie erfolgsversprechend sind, um das Ziel zu erreichen.",
+        example: "Schrittweise Reduktion ist im Schnuller‑Fall meist erfolgsversprechender als abruptes Wegnehmen."
+      },
+      axio: {
+        title: "Mittel – axiologische Perspektive",
+        text: "Axiologisch wird bewertet, ob die Mittel kindgerecht, verantwortungsvoll und nicht überfordernd sind.",
+        example: "Ein Abschrittsritual mit dem Kind ist axiologisch eher wünschenswert als ein abruptes Verbot."
+      }
+    },
+    bedingungen: {
+      tech: {
+        title: "Bedingungsfeld – technologische Perspektive",
+        text: "Das Bedingungsfeld umfasst innere und äußere Voraussetzungen. Technologisch wird geprüft, ob sie förderlich, hinderlich oder neutral für die Zielerreichung sind.",
+        example: "Hohe Belastung (Umzug, Kita‑Start) ist technologisch eher hinderlich für das Schnuller‑Abgewöhnen."
+      },
+      axio: {
+        title: "Bedingungsfeld – axiologische Perspektive",
+        text: "Axiologisch wird gefragt, ob der gewählte Zeitpunkt und Kontext verantwortungsvoll sind.",
+        example: "Eine stabile, ruhige Phase ist axiologisch eher erwünscht als eine ohnehin belastete Situation."
+      }
+    },
+    wirkungen: {
+      tech: {
+        title: "Wirkungshypothesen – technologische Perspektive",
+        text: "Wirkungshypothesen beschreiben absehbare Nebenwirkungen. Technologisch wird geprüft, ob sie den Erfolg verstärken, gefährden oder neutral bleiben.",
+        example: "Kurzfristige Unruhe kann akzeptabel sein, wenn sie zu langfristig besserer Selbstregulation führt."
+      },
+      axio: {
+        title: "Wirkungshypothesen – axiologische Perspektive",
+        text: "Axiologisch wird bewertet, ob die Nebenwirkungen pädagogisch vertretbar sind.",
+        example: "Starke, anhaltende Angstreaktionen wären axiologisch nicht wünschenswert, auch wenn das Ziel erreicht wird."
+      }
+    }
+  };
+
+  const detailHeading = document.querySelector(".matrix-detail-heading");
+  const detailText = document.querySelector(".matrix-detail-text");
+  const detailExample = document.querySelector(".matrix-detail-example");
+  const toggleTech = document.getElementById("toggle-tech");
+  const toggleAxio = document.getElementById("toggle-axio");
+  let currentPerspective = "tech";
+
+  document.querySelectorAll(".matrix-cell").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const field = cell.getAttribute("data-field");
+      const data = matrixData[field][currentPerspective];
+      detailHeading.textContent = data.title;
+      detailText.textContent = data.text;
+      detailExample.textContent = data.example;
+    });
+  });
+
+  toggleTech.addEventListener("click", () => {
+    currentPerspective = "tech";
+    toggleTech.classList.add("active");
+    toggleAxio.classList.remove("active");
+    detailHeading.textContent = "Feld auswählen, um Details zu sehen";
+    detailText.textContent = "Klicke auf eines der vier Felder, um die technologische Perspektive zu sehen: Funktionalität und Erfolgswahrscheinlichkeit.";
+    detailExample.textContent = "";
+  });
+
+  toggleAxio.addEventListener("click", () => {
+    currentPerspective = "axio";
+    toggleAxio.classList.add("active");
+    toggleTech.classList.remove("active");
+    detailHeading.textContent = "Feld auswählen, um Details zu sehen";
+    detailText.textContent = "Klicke auf eines der vier Felder, um die axiologische Perspektive zu sehen: Werte, Legitimation und pädagogische Vertretbarkeit.";
+    detailExample.textContent = "";
+  });
+
+  // Daten für Szenario-Builder
+  const purposeProfiles = {
+    zahn: {
+      tech: "Ziel ist klar formuliert und grundsätzlich erreichbar: Zahnfehlstellungen zu vermeiden ist funktional sinnvoll.",
+      axio: "Axiologisch ist das Ziel wünschenswert, da es Gesundheit und Entwicklung des Kindes berücksichtigt.",
+      baseEffects: ["Langfristig geringeres Risiko für Zahnfehlstellungen.", "Kind muss lernen, andere Beruhigungsstrategien zu nutzen."]
+    },
+    selbstreg: {
+      tech: "Ziel ist klar und funktional sinnvoll: Selbstregulation zu fördern ist ein pädagogisch tragfähiger Zweck.",
+      axio: "Axiologisch sehr wünschenswert, da das Kind in seiner emotionalen Entwicklung gestärkt wird.",
+      baseEffects: ["Langfristig bessere Selbstregulation.", "Kurzfristig kann das Kind mehr Nähe und Unterstützung brauchen."]
+    },
+    genervt: {
+      tech: "Ziel ist funktional möglich, aber unscharf: „Eltern sind genervt“ ist kein pädagogisch präziser Zweck.",
+      axio: "Axiologisch fragwürdig, da das Ziel primär die Entlastung der Erwachsenen und nicht die Entwicklung des Kindes fokussiert.",
+      baseEffects: ["Kind könnte das Gefühl bekommen, selbst das Problem zu sein.", "Vertrauen kann belastet werden, wenn das Vorgehen als willkürlich erlebt wird."]
+    }
+  };
+
+  const meansProfiles = {
+    abrupt: {
+      tech: "Abruptes Wegnehmen kann das Ziel erreichen, ist aber mit hohem Risiko verbunden.",
+      axio: "Axiologisch oft problematisch, da das Kind stark überfordert werden kann.",
+      effects: ["Kurzfristig hohe Unruhe.", "Starke Trotzreaktionen.", "Mögliche Angst oder Verunsicherung."]
+    },
+    schritt: {
+      tech: "Schrittweise Reduktion ist technologisch meist sehr erfolgsversprechend.",
+      axio: "Axiologisch eher kindgerecht, da das Kind sich anpassen kann.",
+      effects: ["Moderate Unruhe.", "Kind kann neue Routinen lernen.", "Langfristig stabile Selbstregulation."]
+    },
+    einschlafen: {
+      tech: "Nur noch zum Einschlafen erlauben ist ein Zwischenweg, der funktional helfen kann.",
+      axio: "Axiologisch vertretbar, wenn klar kommuniziert und nicht beliebig gehandhabt.",
+      effects: ["Unruhe vor Situationen ohne Schnuller.", "Kind verknüpft Schnuller stark mit Einschlafsituation.", "Reduktion gelingt schrittweise."]
+    },
+    ritual: {
+      tech: "Ein Abschiedsritual kann das Ziel unterstützen, wenn es konsequent umgesetzt wird.",
+      axio: "Axiologisch sehr wünschenswert, da das Kind aktiv beteiligt wird.",
+      effects: ["Emotionale Verarbeitung wird erleichtert.", "Kind erlebt Selbstwirksamkeit.", "Kurzfristig Traurigkeit, langfristig positive Bewältigung."]
+    }
+  };
+
+  const conditionProfiles = {
+    aengstlich: {
+      tech: "Ängstlichkeit des Kindes ist technologisch eher hinderlich.",
+      axio: "Axiologisch erfordert dies besondere Sensibilität und behutsames Vorgehen.",
+      effects: ["Erhöhte Wahrscheinlichkeit für Angstreaktionen.", "Kind braucht mehr emotionale Begleitung."]
+    },
+    uneinig: {
+      tech: "Uneinigkeit der Eltern ist technologisch hinderlich, da Inkonsistenz das Vorgehen schwächt.",
+      axio: "Axiologisch problematisch, da das Kind widersprüchliche Signale erhält.",
+      effects: ["Kind erlebt Unsicherheit.", "Regeln werden als wechselhaft erlebt."]
+    },
+    belastung: {
+      tech: "Hohe Belastung (Umzug, Kita‑Start) ist technologisch eher ungünstig für zusätzliche Veränderungen.",
+      axio: "Axiologisch sollte geprüft werden, ob der Zeitpunkt verantwortungsvoll ist.",
+      effects: ["Kind kann überfordert sein.", "Neue Anforderungen überlagern sich."]
+    },
+    ruhig: {
+      tech: "Eine stabile, ruhige Phase ist technologisch förderlich.",
+      axio: "Axiologisch wünschenswert, da das Kind Ressourcen für Veränderung hat.",
+      effects: ["Kind kann Veränderungen besser verarbeiten.", "Weniger Risiko für Überforderung."]
+    }
+  };
+
+  const selectPurpose = document.getElementById("select-purpose");
+  const selectMeans = document.getElementById("select-means");
+  const conditionsGroup = document.getElementById("conditions-group");
+  const btnSimulate = document.getElementById("btn-simulate");
+  const effectsList = document.getElementById("effects-list");
+  const dotTech = document.getElementById("dot-tech");
+  const dotAxio = document.getElementById("dot-axio");
+  const radarRisk = document.getElementById("radar-risk");
+  const radarLoad = document.getElementById("radar-load");
+  const radarBenefit = document.getElementById("radar-benefit");
+
+  function updateButtonState() {
+    const purpose = selectPurpose.value;
+    const means = selectMeans.value;
+    const conditions = Array.from(conditionsGroup.querySelectorAll("input:checked")).map(c => c.value);
+    btnSimulate.disabled = !(purpose && means && conditions.length > 0);
+  }
+
+  selectPurpose.addEventListener("change", updateButtonState);
+  selectMeans.addEventListener("change", () => {
+    updateButtonState();
+    updateRadar();
+  });
+  conditionsGroup.querySelectorAll("input").forEach(input => {
+    input.addEventListener("change", updateButtonState);
+  });
+
+  function updateRadar() {
+    const means = selectMeans.value;
+    let risk = "–", load = "–", benefit = "–";
+    if (means === "abrupt") {
+      risk = "hoch";
+      load = "hoch";
+      benefit = "mittel";
+    } else if (means === "schritt") {
+      risk = "mittel";
+      load = "mittel";
+      benefit = "hoch";
+    } else if (means === "einschlafen") {
+      risk = "mittel";
+      load = "mittel";
+      benefit = "mittel";
+    } else if (means === "ritual") {
+      risk = "gering";
+      load = "mittel";
+      benefit = "hoch";
+    }
+    radarRisk.textContent = risk;
+    radarLoad.textContent = load;
+    radarBenefit.textContent = benefit;
+  }
+
+  function setAmpel(techLevel, axioLevel) {
+    dotTech.className = "ampel-dot " + techLevel;
+    dotAxio.className = "ampel-dot " + axioLevel;
+  }
+
+  btnSimulate.addEventListener("click", () => {
+    const purposeKey = selectPurpose.value;
+    const meansKey = selectMeans.value;
+    const conditionKeys = Array.from(conditionsGroup.querySelectorAll("input:checked")).map(c => c.value);
+
+    const purpose = purposeProfiles[purposeKey];
+    const means = meansProfiles[meansKey];
+
+    const effects = [];
+    if (purpose && purpose.baseEffects) {
+      effects.push(...purpose.baseEffects);
+    }
+    if (means && means.effects) {
+      effects.push(...means.effects);
+    }
+    conditionKeys.forEach(key => {
+      const cond = conditionProfiles[key];
+      if (cond && cond.effects) {
+        effects.push(...cond.effects);
+      }
+    });
+
+    effectsList.innerHTML = "";
+    if (effects.length > 0) {
+      const ul = document.createElement("ul");
+      ul.style.margin = "0";
+      ul.style.paddingLeft = "16px";
+      ul.style.color = "var(--text)";
+      effects.forEach(e => {
+        const li = document.createElement("li");
+        li.textContent = e;
+        ul.appendChild(li);
+      });
+      effectsList.appendChild(ul);
+    } else {
+      effectsList.textContent = "Keine Wirkungshypothesen gefunden.";
+    }
+
+    // Ampel-Logik (vereinfachtes Modell)
+    let techLevel = "warning";
+    let axioLevel = "warning";
+
+    // Technologisch
+    if (meansKey === "schritt" || meansKey === "ritual") {
+      techLevel = "success";
+    } else if (meansKey === "abrupt") {
+      techLevel = "danger";
+    } else {
+      techLevel = "warning";
+    }
+
+    // Axiologisch
+    if (purposeKey === "genervt") {
+      axioLevel = "danger";
+    } else if (meansKey === "abrupt") {
+      axioLevel = "danger";
+    } else if (meansKey === "ritual" || purposeKey === "selbstreg") {
+      axioLevel = "success";
+    } else {
+      axioLevel = "warning";
+    }
+
+    // Bedingungen beeinflussen Einschätzung
+    if (conditionKeys.includes("ruhig")) {
+      if (techLevel === "warning") techLevel = "success";
+    }
+    if (conditionKeys.includes("belastung") || conditionKeys.includes("uneinig")) {
+      if (techLevel === "success") techLevel = "warning";
+      if (axioLevel === "success") axioLevel = "warning";
+    }
+    if (conditionKeys.includes("aengstlich") && meansKey === "abrupt") {
+      techLevel = "danger";
+      axioLevel = "danger";
+    }
+
+    setAmpel(techLevel, axioLevel);
+  });
+</script>
+</body>
+</html>
